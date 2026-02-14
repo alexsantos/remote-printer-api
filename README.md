@@ -62,6 +62,8 @@ You can send a POST request to the `/print` endpoint with a JSON payload contain
 - `ip` (str): The IP address of the printer.
 - `port` (int, optional): The port number for the printer connection (defaults to 9100).
 
+### Client Examples
+
 **Example using `curl`:**
 
 ```sh
@@ -87,6 +89,85 @@ payload = {
 response = requests.post(url, json=payload)
 
 print(response.json())
+```
+
+**Example for Web Browsers (JavaScript `fetch`):**
+
+```javascript
+const printData = {
+  data: "^XA^FO50,50^ADN,36,20^FDHello, Printer!^FS^XZ",
+  ip: "192.168.1.100"
+};
+
+fetch('http://127.0.0.1:8000/print', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(printData)
+})
+.then(response => response.json())
+.then(result => {
+  console.log('Success:', result);
+})
+.catch(error => {
+  console.error('Error:', error);
+});
+```
+
+**Example for AngularJS:**
+
+```javascript
+// In your AngularJS controller
+$http.post('http://127.0.0.1:8000/print', {
+  data: "^XA^FO50,50^ADN,36,20^FDHello, Printer!^FS^XZ",
+  ip: "192.168.1.100"
+}).then(function(response) {
+  console.log('Success:', response.data);
+}, function(error) {
+  console.error('Error:', error);
+});
+```
+
+**Example for Node.js:**
+
+```javascript
+const http = require('http');
+
+const printData = JSON.stringify({
+  data: "^XA^FO50,50^ADN,36,20^FDHello, Printer!^FS^XZ",
+  ip: "192.168.1.100"
+});
+
+const options = {
+  hostname: '127.0.0.1',
+  port: 8000,
+  path: '/print',
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Content-Length': printData.length
+  }
+};
+
+const req = http.request(options, (res) => {
+  let data = '';
+
+  res.on('data', (chunk) => {
+    data += chunk;
+  });
+
+  res.on('end', () => {
+    console.log('Response:', JSON.parse(data));
+  });
+});
+
+req.on('error', (error) => {
+  console.error('Error:', error);
+});
+
+req.write(printData);
+req.end();
 ```
 
 ### Running Tests
