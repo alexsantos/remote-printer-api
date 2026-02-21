@@ -4,8 +4,8 @@ version = "0.1.0"
 description = "An API for printing labels on remote printers."
 requires-python = ">=3.11"
 dependencies = [
-    "fastapi>=0.110.0",
-    "uvicorn>=0.27.1",
+    "fastapi>=0.129.1",
+    "uvicorn>=0.41.0",
 ]
 
 [project.optional-dependencies]
@@ -16,4 +16,9 @@ test = [
 [tool.pytest.ini_options]
 pythonpath = [
   "."
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
 ]
