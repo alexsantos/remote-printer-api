@@ -1,6 +1,6 @@
-name: Testes Automatizados
+name: Automated Tests
 
-# Define quando o robô deve trabalhar (em qualquer push ou pull request para a branch main)
+# Trigger the workflow on push or pull request events for the main branches
 on:
   push:
     branches: [ "main", "master" ]
@@ -8,32 +8,32 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  testes:
-    name: Correr Pytest
+  test:
+    name: Run Pytest
     runs-on: ubuntu-latest
 
     steps:
-      # Passo 1: O robô faz o download do teu código
-      - name: Obter o código fonte
+      # Step 1: Check out the repository code
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      # Passo 2: O robô instala a ferramenta 'uv'
-      - name: Instalar o uv
+      # Step 2: Install the 'uv' package manager
+      - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      # Passo 3: O robô instala o Python 3.11
-      - name: Configurar o Python
+      # Step 3: Set up the Python environment
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      # Passo 4: O robô usa o uv para instalar o FastAPI, pytest, etc.
-      - name: Instalar dependências do projeto
+      # Step 4: Install the project dependencies using uv
+      - name: Install project dependencies
         run: uv sync
 
-      # Passo 5: O robô corre os testes exatamente como fazes no teu terminal
-      - name: Executar os testes
-        run: uv run pytest -v
+      # Step 5: Run the test suite
+      - name: Run tests
+        run: uv run python -m pytest -v
