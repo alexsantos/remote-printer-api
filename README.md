@@ -1,205 +1,112 @@
-# Remote Printer API
+# Remote Printer Cloud Gateway 🖨️☁️
 
-A simple FastAPI application to send raw print data to printers on a local network. This acts as a gateway, allowing you to send print jobs from a web application to a printer that is not directly accessible from the public internet.
+This is a lightweight **FastAPI** gateway designed to run on **Google Cloud Run**. It acts as a bridge between web applications and network printers (TCP/IP), allowing you to send raw print commands (like ZPL or ESC/POS) over HTTPS with built-in security.
 
-## Features
+---
 
-- **Send Raw Data**: Send raw command data (like ZPL, EPL, or ESC/POS) to a specified printer IP address.
-- **Simple API**: A single `/print` endpoint for all print jobs.
-- **Containerized**: Includes a `Dockerfile` for easy deployment.
-- **Tested**: Comes with a full suite of tests using `pytest`.
+## 🚀 Features
 
-## Getting Started
+* **FastAPI & Uvicorn**: High-performance asynchronous execution.
+* **X-API-Key Security**: Protected by mandatory header validation.
+* **Cloud Native**: Optimized for Google Cloud Run dynamic port environment.
+* **Modern Python Tooling**: Managed with `uv` for lightning-fast builds and deterministic dependencies.
+* **Full Async I/O**: Non-blocking TCP connections using `asyncio`.
+
+---
+
+## 🛠️ Local Setup & Installation
 
 ### Prerequisites
 
-- Python 3.11+
-- [uv](https://github.com/astral-sh/uv) (recommended)
-- Docker (for containerized deployment)
+Ensure you have uv installed:
 
-### Installation
+    curl -LsSf https://astral.sh/uv/install.sh | sh
 
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/your-username/remote-printer-api.git
+### 1. Clone & Prepare
+
+    git clone https://github.com/alexsantos/remote-printer-api.git
     cd remote-printer-api
-    ```
 
-2.  **Create a virtual environment and install dependencies:**
-    ```sh
-    uv venv
-    source .venv/bin/activate
-    uv pip install -e .
-    ```
+### 2. Install Dependencies
 
-### Running the Application
+    uv sync
 
-To run the development server:
+### 3. Environment Configuration
+The application requires an API Key. You must set the `PRINTER_API_KEY` environment variable:
 
-```sh
-uvicorn app.main:app --reload
-```
+    export PRINTER_API_KEY="your-secret-key-here"
 
-The API will be available at `http://127.0.0.1:8000`.
+### 4. Run Locally
 
-### Usage
+    uv run python app/main.py
 
-You can send a POST request to the `/print` endpoint with a JSON payload containing the raw data, the printer's IP address, and an optional port.
+The server will start at `http://localhost:8080`.
 
-**Endpoint:** `POST /print`
+---
 
-**Payload:**
+## 🔒 Security & API Usage
 
-```json
-{
-  "data": "^XA^FO50,50^ADN,36,20^FDHello, Printer!^FS^XZ",
-  "ip": "192.168.1.100",
-  "port": 9100
-}
-```
+Every request to the `/print` endpoint must include the `X-API-Key` header.
 
-- `data` (str): The raw command data to be sent to the printer.
-- `ip` (str): The IP address of the printer.
-- `port` (int, optional): The port number for the printer connection (defaults to 9100).
+### Request Specification
+* **Method**: POST
+* **Path**: `/print`
+* **Headers**: 
+    * `X-API-Key`: <your_secret_key>
+    * `Content-Type`: application/json
 
-### Client Examples
+### Example Payload
 
-**Example using `curl`:**
+    {
+      "data": "^XA^FO50,50^A0N,50,50^FDCloud Print Test^FS^XZ",
+      "ip": "192.168.1.50",
+      "port": 9100
+    }
 
-```sh
-curl -X POST "http://127.0.0.1:8000/print" \
-     -H "Content-Type: application/json" \
-     -d '{
-           "data": "^XA^FO50,50^ADN,36,20^FDHello, Printer!^FS^XZ",
-           "ip": "192.168.1.100"
-         }'
-```
+---
 
-**Example using Python:**
+## 🧪 Testing
 
-```python
-import requests
+The project includes a robust test suite using `pytest` and `AsyncMock`. It simulates network behavior without requiring a physical printer.
 
-url = "http://127.0.0.1:8000/print"
-payload = {
-    "data": "^XA^FO50,50^ADN,36,20^FDHello, Printer!^FS^XZ",
-    "ip": "192.168.1.100"
-}
+Run the tests:
 
-response = requests.post(url, json=payload)
+    uv run pytest -v
 
-print(response.json())
-```
+The tests validate:
+1.  **Authentication**: Blocks requests with missing or invalid keys.
+2.  **Logic**: Ensures data is correctly encoded to bytes before transmission.
+3.  **Resilience**: Handles connection timeouts and network errors gracefully.
 
-**Example for Web Browsers (JavaScript `fetch`):**
+---
 
-```javascript
-const printData = {
-  data: "^XA^FO50,50^ADN,36,20^FDHello, Printer!^FS^XZ",
-  ip: "192.168.1.100"
-};
+## ☁️ Deployment to Google Cloud Run
 
-fetch('http://127.0.0.1:8000/print', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(printData)
-})
-.then(response => response.json())
-.then(result => {
-  console.log('Success:', result);
-})
-.catch(error => {
-  console.error('Error:', error);
-});
-```
+The provided `Dockerfile` is optimized to use `uv` for building the production container.
 
-**Example for AngularJS:**
+### Deploy Command
 
-```javascript
-// In your AngularJS controller
-$http.post('http://127.0.0.1:8000/print', {
-  data: "^XA^FO50,50^ADN,36,20^FDHello, Printer!^FS^XZ",
-  ip: "192.168.1.100"
-}).then(function(response) {
-  console.log('Success:', response.data);
-}, function(error) {
-  console.error('Error:', error);
-});
-```
+    gcloud run deploy printer-gateway \
+      --source . \
+      --region europe-west1 \
+      --set-env-vars PRINTER_API_KEY=your-strong-secret-key \
+      --allow-unauthenticated
 
-**Example for Node.js:**
+---
 
-```javascript
-const http = require('http');
+## 📂 Project Structure
 
-const printData = JSON.stringify({
-  data: "^XA^FO50,50^ADN,36,20^FDHello, Printer!^FS^XZ",
-  ip: "192.168.1.100"
-});
+    .
+    ├── app/
+    │   ├── __init__.py
+    │   └── main.py          # FastAPI application logic
+    ├── tests/
+    │   └── test_main.py     # Async test suite with Mocking
+    ├── Dockerfile           # Multi-stage build using uv
+    ├── pyproject.toml       # Modern Python project configuration
+    ├── uv.lock              # Dependency lockfile
+    └── README.md            # You are here!
 
-const options = {
-  hostname: '127.0.0.1',
-  port: 8000,
-  path: '/print',
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Content-Length': printData.length
-  }
-};
+---
 
-const req = http.request(options, (res) => {
-  let data = '';
-
-  res.on('data', (chunk) => {
-    data += chunk;
-  });
-
-  res.on('end', () => {
-    console.log('Response:', JSON.parse(data));
-  });
-});
-
-req.on('error', (error) => {
-  console.error('Error:', error);
-});
-
-req.write(printData);
-req.end();
-```
-
-### Running Tests
-
-To run the test suite:
-
-1.  **Install test dependencies:**
-    ```sh
-    uv pip install -e .[test]
-    ```
-
-2.  **Run pytest:**
-    ```sh
-    pytest
-    ```
-
-### Docker Deployment
-
-The project includes a `Dockerfile` for easy containerization.
-
-1.  **Build the Docker image:**
-    ```sh
-    docker build -t remote-printer-api .
-    ```
-
-2.  **Run the Docker container:**
-    ```sh
-    docker run -d -p 8080:8080 --name remote-printer-container remote-printer-api
-    ```
-
-The API will then be accessible on `http://localhost:8080`.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+**Author**: Alexandre Santos (https://github.com/alexsantos)
