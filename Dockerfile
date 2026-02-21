@@ -1,31 +1,25 @@
-# 1. Imagem base oficial do Python
-FROM python:3.11-slim
+# 1. Official Python base image
+FROM python:3.13-slim
 
-# 2. Instalar o binário do uv a partir da imagem oficial
+# 2. Install uv binary from the official image
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# 3. Definir o diretório da aplicação
+# 3. Set the application directory
 WORKDIR /app
 
-# 4. Copiar os ficheiros de configuração do projeto
-# Copiamos o lockfile primeiro para aproveitar a cache do Docker
-COPY pyproject.toml uv.lock ./
+# 4. Install dependencies using bind mounts (no layer bloat, cached by uv)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project
 
-# 5. Instalar as dependências
-# --frozen: Garante que o uv não altere o lockfile
-# --no-install-project: Instala apenas as dependências (camada de cache)
-RUN uv sync --frozen --no-cache --no-install-project
+# 5. Copy source code
+COPY app/ ./app/
 
-# 6. Copiar o código fonte
-COPY main.py .
-
-# 7. Garantir que o Python usa o ambiente virtual criado pelo uv
-ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# 8. Porta padrão do Cloud Run
+# 6. Default port for Cloud Run
 EXPOSE 8080
 
-# 9. Executar a aplicação (agora o python já aponta para o .venv)
-CMD ["python", "main.py"]
+CMD ["uv", "run", "app/main.py"]
