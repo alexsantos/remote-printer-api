@@ -1,6 +1,5 @@
 import pytest
 import asyncio
-import os
 from unittest.mock import patch, AsyncMock, MagicMock
 from fastapi.testclient import TestClient
 
