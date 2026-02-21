@@ -1,5 +1,7 @@
 # Remote Printer Cloud Gateway 🖨️☁️
 
+[![Automated Tests](https://github.com/alexsantos/remote-printer-api/actions/workflows/tests.yml/badge.svg)](https://github.com/alexsantos/remote-printer-api/actions/workflows/tests.yml)
+
 This is a lightweight **FastAPI** gateway designed to run on **Google Cloud Run**. It acts as a bridge between web applications and network printers (TCP/IP), allowing you to send raw print commands (like ZPL or ESC/POS) over HTTPS with built-in security.
 
 ---
