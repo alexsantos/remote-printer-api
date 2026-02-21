@@ -121,6 +121,3 @@ venv.bak/
 
 # VSCode
 .vscode/
-
-# uv
-uv.lock
