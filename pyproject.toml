@@ -1,10 +1,10 @@
 [project]
 name = "remote-printer-api"
-version = "0.1.0"
+version = "0.2.0"
 description = "An API for printing labels on remote printers."
 requires-python = ">=3.11"
 dependencies = [
-    "fastapi>=0.129.1",
+    "fastapi>=0.129.2",
     "uvicorn>=0.41.0",
 ]
 
